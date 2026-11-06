@@ -1,0 +1,10 @@
+{
+  "name": "github-task-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Private labels in GitHub's native pull request lists and PR pages",
+  "license": "MIT",
+  "scripts": { "test": "node --test tests/*.test.js", "test:browser": "node tests/browser.mjs && node tests/filter-browser.mjs && node tests/tasks-browser.mjs && node tests/tasks-labels-browser.mjs && node tests/tasks-refresh-browser.mjs && node tests/tasks-notes-browser.mjs", "screenshots": "node scripts/screenshots.mjs", "check": "node scripts/check.mjs", "package": "node scripts/package.mjs" },
+  "engines": { "node": ">=20" }
+}

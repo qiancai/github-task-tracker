@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My tasks · GitHub Task Tracker</title>
+  <link rel="icon" href="icons/icon-48.png">
+  <link rel="stylesheet" href="src/settings.css">
+  <link rel="stylesheet" href="src/tasks.css">
+  <script type="module" src="src/tasks.js"></script>
+</head>
+<body>
+  <div class="shell task-shell">
+    <header><div class="identity"><img src="icons/icon-48.png" width="36" height="36" alt=""><div><h1>GitHub Task Tracker</h1><p>Private pull request tracking</p></div></div><span class="local"><span aria-hidden="true">●</span> Local to this browser</span></header>
+    <nav class="page-nav" aria-label="Extension pages"><a href="tasks.html" aria-current="page">My tasks</a><a href="settings.html">Labels &amp; backup</a></nav>
+    <main>
+      <div class="intro"><h2>My tasks</h2><p>Your labeled PRs and private notes, across all repositories.</p></div>
+      <div id="notice" role="status" aria-live="polite"></div>
+      <div class="task-toolbar">
+        <div class="task-filters">
+          <label>Private label<select id="label-filter"><option value="">All labels</option></select></label>
+          <label>Repository<select id="repo-filter"><option value="">All repositories</option></select></label>
+        </div>
+        <div class="task-sorting"><label for="sort-field">Sort by</label><select id="sort-field"><option value="">Repository</option><option value="title" selected>Pull request</option><option value="author">Author</option><option value="base">Base branch</option></select><button id="sort-direction" type="button">↑ Ascending</button><button id="clear-filters" type="button">Clear filters</button></div>
+        <div class="task-toolbar-actions"><button id="refresh-details" type="button" aria-label="Refresh details" aria-describedby="sort-progress" aria-busy="false" title="Refresh details"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 2v6h-6M3 22v-6h6M5.51 7a7 7 0 0 1 11.55-2.61L21 8M3 16l3.94 3.61A7 7 0 0 0 18.49 17"/></svg></button><div id="refresh-status" hidden><p id="sort-progress" role="status" aria-live="polite"></p><progress id="refresh-progress" max="1" value="0" aria-label="Refresh progress"></progress></div></div>
+      </div>
+      <div class="task-list-tools">
+        <div class="task-summary"><strong id="task-count" role="status">Loading your tasks…</strong></div>
+        <div id="bulk-actions" class="bulk-actions" hidden><label><input id="select-page" type="checkbox"> Select page</label><span id="selected-count" role="status">0 selected</span></div>
+      </div>
+      <div class="task-table-wrap" id="task-results" aria-busy="true">
+        <table class="task-table"><thead><tr><th scope="col" class="task-select-cell"><input id="select-all" type="checkbox" aria-label="Select all PRs on this page"></th><th scope="col" aria-sort="none"><button type="button" class="column-sort" data-sort="title">Pull request<span aria-hidden="true"> ↕</span></button></th><th scope="col" aria-sort="none"><button type="button" class="column-sort" data-sort="author">Author<span aria-hidden="true"> ↕</span></button></th><th scope="col" aria-sort="none"><button type="button" class="column-sort" data-sort="base">Base branch<span aria-hidden="true"> ↕</span></button></th><th scope="col" class="task-labels-heading"><span id="private-labels-heading">Private labels</span><button id="bulk-add-labels" class="header-label-button" type="button" aria-haspopup="dialog" aria-controls="add-labels-dialog" aria-expanded="false" title="Manage labels for selected PRs" disabled hidden>Private labels<svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button></th><th scope="col">Notes</th></tr></thead><tbody id="task-rows"></tbody></table>
+        <p id="empty-tasks" hidden></p>
+      </div>
+      <nav id="task-pagination" class="task-pagination" aria-label="Task pages" hidden><button id="previous-page" type="button">Previous</button><span id="page-count"></span><button id="next-page" type="button">Next</button></nav>
+      <footer><span>No account. No token. No server.</span><p>Labels stay in this Chrome profile. Base branch is the merge target. PR details use your GitHub browser session and update in the background; a cache in this tab keeps details visible across reloads. Unavailable PRs stay listed by number.</p></footer>
+    </main>
+  </div>
+  <dialog id="add-labels-dialog" class="gtt-label-picker" aria-labelledby="add-labels-title"><form id="add-labels-form"><h3 id="add-labels-title" class="picker-title">Edit private labels</h3><p id="add-labels-target" class="picker-hint"></p><p class="picker-hint">Check to add; uncheck to remove. Untouched labels stay unchanged.</p><div id="add-label-choices" class="picker-choices"></div><button id="create-label-toggle" class="picker-create-toggle" type="button" aria-expanded="false">+ Create label</button><div id="new-task-label" class="new-task-label picker-create-fields" hidden><label for="add-label-name">New label name</label><div><input id="add-label-name" type="text" maxlength="60" placeholder="New label name"><input id="add-label-color" type="color" value="#0969da" aria-label="New label color"></div><button id="cancel-create-label" type="button">Cancel new label</button></div><p id="add-labels-error" role="alert"></p><div class="dialog-actions picker-footer"><a class="picker-manage" href="settings.html" target="_blank" rel="noreferrer">Manage labels</a><button id="cancel-add-labels" type="button">Cancel</button><button id="apply-add-labels" type="submit" class="primary" disabled>Apply labels</button></div></form></dialog>
+  <dialog id="note-dialog" aria-labelledby="note-title"><form id="note-form"><h3 id="note-title">Private note</h3><p id="note-target"></p><label for="note-text" class="sr-only">Note text</label><textarea id="note-text" rows="6" maxlength="2000" placeholder="Add a private note…"></textarea><p class="hint">Saved only in this browser. Up to 2,000 characters. Clear the text to remove the note.</p><p id="note-conflict" role="status"></p><button id="reload-note" type="button" hidden>Load latest note</button><p id="note-error" role="alert"></p><div class="dialog-actions"><button id="cancel-note" type="button">Cancel</button><button id="save-note" type="submit" class="primary">Save note</button></div></form></dialog>
+</body>
+</html>

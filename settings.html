@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitHub Task Tracker</title>
+  <link rel="icon" href="icons/icon-48.png">
+  <link rel="stylesheet" href="src/settings.css">
+  <script type="module" src="src/settings.js"></script>
+</head>
+<body class="labels-page">
+  <div class="shell">
+    <header>
+      <div class="identity"><img src="icons/icon-48.png" width="36" height="36" alt=""><div><h1>GitHub Task Tracker</h1><p>A little order for your pull requests.</p></div></div>
+      <span class="local"><span aria-hidden="true">●</span> Local to this browser</span>
+    </header>
+    <nav class="page-nav" aria-label="Extension pages"><a href="tasks.html">My tasks</a><a href="settings.html" aria-current="page">Labels &amp; backup</a></nav>
+    <main>
+      <div class="intro"><h2>Your workflow. Your labels.</h2><p>Mark what needs your attention, right in GitHub’s pull request lists.<br>These labels are personal. They won’t change the repository’s labels.</p></div>
+      <div id="notice" role="status" aria-live="polite"></div>
+      <div class="workspace">
+        <section aria-labelledby="labels-heading">
+          <div class="section-title"><h3 id="labels-heading">Private labels <span id="label-count" class="count"></span></h3><span>Up to 100 labels</span></div>
+          <p class="hint">Rename or recolor a label everywhere you’ve used it.</p>
+          <div id="labels" class="labels"></div>
+          <form id="add-label" class="add-label">
+            <label class="color-field"><span class="sr-only">New label color</span><input id="new-color" type="color" value="#0969da" aria-label="New label color"></label>
+            <label class="name-field"><span class="sr-only">New label name</span><input id="new-name" type="text" maxlength="60" required placeholder="e.g. Pending by designer" aria-label="New label name"></label>
+            <button type="submit" class="primary">Add label</button>
+          </form>
+        </section>
+        <aside>
+          <div class="preview"><h3>At home on GitHub</h3><p>Labels sit beside each PR title.</p><div class="mock-row"><span class="pr-symbol" aria-hidden="true">⑂</span><div><strong>docs: clarify configuration limits</strong><div id="preview-labels"></div><small>#24528 opened in pingcap/docs</small></div></div><p class="preview-caption">Example preview · only you see these labels</p></div>
+          <div class="quickstart"><h3>Start tracking</h3><ol><li>Open a repository’s <strong>Pull requests</strong> tab, or your GitHub <a href="https://github.com/pulls" target="_blank" rel="noreferrer">pull request list</a>.</li><li>Click <strong>+ Private labels</strong> beside a PR title.</li><li>Choose existing labels, or click <strong>+ Create label</strong> to create and apply one right there.</li></ol><p>Already had GitHub open when you installed? Refresh the page once.</p></div>
+        </aside>
+      </div>
+      <section class="backup" aria-labelledby="backup-heading">
+        <div><h3 id="backup-heading">Keep a copy</h3><p id="data-summary">Loading your data…</p><p class="hint">Export before switching browsers or uninstalling. There’s no cloud sync.</p></div>
+        <div class="backup-actions"><button id="export" type="button">Export JSON</button><label class="file-button">Import JSON<input id="import" type="file" accept="application/json,.json"></label></div>
+      </section>
+      <div id="import-preview" class="import-preview" hidden><h3>Review your backup</h3><p id="import-summary"></p><p>Import replaces all current labels, PR assignments, and notes. Export a copy first if you want to keep them.</p><button id="confirm-import" class="danger" type="button">Replace current data</button> <button id="cancel-import" type="button">Cancel</button></div>
+      <footer><span>No account. No token. No server.</span><p>Saved in this Chrome profile. Backups include repository names, PR numbers, and private notes. Uninstalling the extension removes its data.</p></footer>
+    </main>
+  </div>
+  <dialog id="delete-dialog"><form method="dialog"><h3>Delete this label?</h3><p id="delete-description"></p><div class="dialog-actions"><button value="cancel">Cancel</button><button value="delete" class="danger">Delete label</button></div></form></dialog>
+</body>
+</html>

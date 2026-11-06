@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Task Tracker",
+  "version": "0.1.0",
+  "minimum_chrome_version": "120",
+  "description": "Your private labels in GitHub pull request lists and PR pages. Local storage, no account or token required.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://github.com/*"],
+  "background": { "service_worker": "src/background.js", "type": "module" },
+  "content_scripts": [{
+    "matches": ["https://github.com/*"],
+    "js": ["src/filter-view.js", "src/label-order.js", "src/label-picker.js", "src/content.js"],
+    "run_at": "document_idle"
+  }],
+  "action": { "default_title": "GitHub Task Tracker — My tasks" },
+  "options_page": "settings.html",
+  "icons": { "16": "icons/icon-16.png", "48": "icons/icon-48.png", "128": "icons/icon-128.png" },
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'" }
+}

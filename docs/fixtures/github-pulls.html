@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pull requests · example-org/sample-project</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #1f2328; background: #fff; }
+    a { color: inherit; text-decoration: none; }
+    .global { height: 64px; padding: 0 32px; background: #f6f8fa; border-bottom: 1px solid #d1d9e0; display: flex; align-items: center; gap: 22px; }
+    .menu { font-size: 20px; color: #59636e; }
+    .brand { font-weight: 700; font-size: 17px; }
+    .global-search { margin-left: auto; width: 290px; border: 1px solid #d1d9e0; border-radius: 6px; padding: 5px 12px; color: #59636e; background: #fff; font-size: 12px; }
+    .avatar { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 700; flex: none; }
+    .repo { padding: 26px 44px 0; background: #f6f8fa; border-bottom: 1px solid #d1d9e0; }
+    .repo-name { color: #0969da; font-size: 20px; display: flex; align-items: center; gap: 10px; }
+    .visibility { color: #59636e; border: 1px solid #d1d9e0; border-radius: 12px; font-size: 12px; padding: 0 7px; }
+    nav { display: flex; gap: 28px; margin-top: 22px; height: 44px; }
+    nav span { display: inline-flex; align-items: center; gap: 7px; }
+    nav .active { border-bottom: 2px solid #fd8c73; font-weight: 600; }
+    .count { font-size: 12px; background: #eaeef2; padding: 0 7px; border-radius: 12px; }
+    main { margin: 30px auto; max-width: 1160px; }
+    .controls { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    .search { flex: 1; background: #f6f8fa; border: 1px solid #d1d9e0; padding: 7px 12px; border-radius: 6px; }
+    button { font: inherit; font-weight: 600; font-size: 12px; border: 1px solid #d1d9e0; border-radius: 6px; padding: 7px 15px; background: #f6f8fa; color: #1f2328; }
+    .new { color: #fff; background: #1f883d; border-color: #1f883d; }
+    .list { border: 1px solid #d1d9e0; border-radius: 6px; overflow: hidden; }
+    .list-header { padding: 14px 18px; background: #f6f8fa; display: flex; align-items: center; gap: 18px; border-bottom: 1px solid #d1d9e0; }
+    .filters { margin-left: auto; color: #59636e; display: flex; gap: 25px; font-size: 12px; }
+    ul { padding: 0; margin: 0; list-style: none; }
+    li { display: flex; gap: 12px; padding: 18px; min-height: 86px; border-bottom: 1px solid #d1d9e0; }
+    li:last-child { border-bottom: none; }
+    .pr-icon { width: 17px; height: 18px; margin-top: 3px; flex: none; color: #1a7f37; }
+    .content { flex: 1; min-width: 0; }
+    h3 { display: inline; font-size: 15px; line-height: 26px; font-weight: 600; margin: 0; }
+    .public-label { font-size: 11px; font-weight: 600; border-radius: 12px; padding: 2px 8px; margin-left: 8px; color: #0550ae; background: #ddf4ff; }
+    .public-label.docs { background: #e8dfff; color: #6639ba; }
+    .public-label.bug { background: #ffebe9; color: #a40e26; }
+    .metadata { font-size: 12px; color: #59636e; margin-top: 6px; }
+    .metadata a { text-decoration: underline; text-decoration-color: #afb8c1; text-underline-offset: 2px; }
+    .right { display: flex; align-items: center; gap: 16px; color: #59636e; font-size: 12px; }
+    .avatar.green { color: #116329; background: #dafbe1; }
+    .avatar.purple { color: #6639ba; background: #fbefff; }
+    .avatar.orange { color: #953800; background: #fff1e5; }
+    .note { margin: 18px 0 0; text-align: center; color: #59636e; font-size: 12px; }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+  <div class="global"><span class="menu">☰</span><span class="brand">GitHub</span><span>example-org / sample-project</span><span class="global-search">Type / to search</span><span class="avatar">DM</span></div>
+  <div class="repo"><div class="repo-name">▣ <span>example-org / <strong>sample-project</strong></span><span class="visibility">Public</span></div><nav><span>⌘ Code</span><span>◉ Issues <b class="count">12</b></span><span class="active">⑂ Pull requests <b class="count">6</b></span><span>▷ Actions</span><span>▦ Projects</span><span>⚙ Settings</span></nav></div>
+  <main id="repo-content-pjax-container">
+    <div class="controls"><div class="search">⌕ &nbsp; is:pr is:open</div><button>Labels <span class="count">8</span></button><button>Milestones</button><button class="new">New pull request</button></div>
+    <section class="list"><div class="list-header"><strong>⑂ &nbsp;6 Open</strong><span>✓ &nbsp;24 Closed</span><div class="filters"><span>Author ⌄</span><span>Label ⌄</span><span>Reviews ⌄</span><span>Newest ⌄</span></div></div><ul id="rows"></ul></section>
+    <p class="note">Demo repository — all pull requests, contributors, and avatars are fictional.</p>
+  </main>
+  <script>
+    const examples = [
+      [106, 'docs: add a quickstart guide', 'demo-alex', 'DA', '', '2 hours ago', 'docs', 'documentation', 3],
+      [105, 'fix: handle an empty search query', 'demo-sam', 'DS', 'green', '4 hours ago', 'bug', 'bug', 2],
+      [104, 'feat: add keyboard shortcuts', 'demo-jordan', 'DJ', 'purple', 'yesterday', '', 'enhancement', 5],
+      [103, 'refactor: simplify settings validation', 'demo-taylor', 'DT', 'orange', 'yesterday', '', 'maintenance', 1],
+      [102, 'test: cover the import workflow', 'demo-alex', 'DA', '', '2 days ago', '', 'tests', 2],
+      [101, 'docs: update the installation steps', 'demo-sam', 'DS', 'green', '3 days ago', 'docs', 'documentation', 0]
+    ];
+    // All fixture data is synthetic; this page loads no real avatars or GitHub content.
+    for (const [number, title, author, initials, color, time, labelClass, label, comments] of examples) {
+      const row = document.createElement('li');
+      row.innerHTML = `<svg class="pr-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4" cy="3" r="2"/><circle cx="4" cy="13" r="2"/><path d="M4 5v6m5-9h2a2 2 0 0 1 2 2v7m-4-9 2-2M9 2l2 2"/><circle cx="13" cy="13" r="2"/></svg><div class="content"><div data-listview-item-title-container="true"><h3><a data-testid="listitem-title-link" href="/example-org/sample-project/pull/${number}">${title}</a></h3><span class="public-label ${labelClass}">${label}</span></div><div class="metadata">#${number} opened ${time} by <a href="/demo/${author}">${author}</a></div></div><div class="right"><span>☏ ${comments}</span><span class="avatar ${color}" aria-label="Example avatar for ${author}">${initials}</span></div>`;
+      document.querySelector('#rows').append(row);
+    }
+  </script>
+</body>
+</html>
