@@ -6,7 +6,7 @@ GitHub Task Tracker has no server, telemetry, analytics, advertisements, account
 
 - Your label definitions (ID, name, and color).
 - Repository names, PR numbers, and the IDs of labels you assign to them.
-- Private plain-text notes, up to 2,000 characters per PR, including for PRs with no remaining labels. Notes are included in JSON backups and never sent to GitHub.
+- Private plain-text notes, up to 2,000 characters per PR, including for PRs with no remaining labels. PRs without labels are hidden from My tasks; their notes reappear if a label is added again. Notes are included in JSON backups and never sent to GitHub.
 
 The extension reads PR links in GitHub's native PR lists and the URL of individual PR Conversation pages to match them to your assignments. It adds a separate private section below the public Labels section in the PR sidebar. It stores data in `chrome.storage.local` in your current browser profile. Extension pages and the service worker access storage; content scripts request data through internal extension messaging. No data is synchronized by this extension to other devices.
 

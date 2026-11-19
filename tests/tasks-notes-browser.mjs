@@ -86,15 +86,27 @@ try {
   const download = await downloaded;
   const backup = JSON.parse(await readFile(await download.path(), 'utf8'));
   assert.equal(backup.notes[a], 'Ready to follow up');
-  await send({ type: 'setLabel', key: a, labelId: 'pending-self', selected: false }); await settled(tasks);
-  assert.equal(await row(tasks).count(), 1, 'Removing the last label discarded a PR with notes');
-  await row(tasks).locator('.task-add-label').click();
-  await tasks.locator('#add-label-choices input[value="pending-engineer"]').check();
-  await tasks.locator('#apply-add-labels').click(); await tasks.locator('#add-labels-dialog').waitFor({ state: 'hidden' });
-  assert.deepEqual((await send({ type: 'get' })).pullRequests[a], ['pending-engineer']);
-  await send({ type: 'setLabel', key: a, labelId: 'pending-engineer', selected: false }); await settled(tasks);
+  // Removing the final label untracks the PR in every tab without deleting its note.
+  await row(tasks).locator('button[data-removal]').click();
+  await until(async () => await row(tasks).count() === 0 && await row(other).count() === 0, 'Unlabeled PR remained tracked');
+  assert.equal((await send({ type: 'get' })).notes[a], 'Ready to follow up');
+  await tasks.reload(); await settled(tasks);
+  assert.equal(await row(tasks).count(), 0, 'Reload restored an unlabeled PR');
+  // Adding a label through the GitHub operation restores the saved note.
+  await send({ type: 'setLabel', key: a, labelId: 'pending-engineer', selected: true });
+  await until(async () => await row(tasks).count() === 1 && await row(other).count() === 1, 'Relabeled PR did not return');
+  assert.equal(await row(tasks).locator('.task-note').textContent(), 'Ready to follow up');
+  // A note editor left open in another tab cannot save after the last label is removed.
+  await open(); await text.fill('Stale draft');
+  await send({ type: 'setLabel', key: a, labelId: 'pending-engineer', selected: false });
+  await until(async () => (await dialog.locator('#note-conflict').textContent()).includes('no longer tracked'), 'Stale note editor stayed editable');
+  assert.equal(await dialog.locator('#save-note').isDisabled(), true);
+  await dialog.locator('#cancel-note').click();
+  await send({ type: 'setLabel', key: a, labelId: 'pending-self', selected: true });
+  await until(async () => await row(tasks).count() === 1, 'Relabeled PR missing before note clear');
   await open(); await text.fill(''); await save();
-  assert.equal(await row(tasks).count(), 0, 'Clearing the final note should untrack an unlabeled PR');
+  assert.equal(await row(tasks).count(), 1, 'Clearing a note untracked a labeled PR');
+  assert.equal((await send({ type: 'get' })).notes[a], undefined);
   await settings.locator('#import').setInputFiles({ name: 'notes.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(backup)) });
   await settings.locator('#confirm-import').click();
   await until(async () => (await send({ type: 'get' })).notes[a] === 'Ready to follow up', 'Imported backup lost the note');
@@ -107,7 +119,7 @@ try {
   assert.ok(await tasks.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'Notes column overflows mobile');
   assert.equal(requests.some(url => /follow|engineer|img|unsaved/.test(url)), false, 'Private note text leaked in a request');
   assert.deepEqual(errors, []);
-  console.log('PASS: add/edit/clear notes, cancel/Escape, safe multiline plain text, persistence, cross-tab drafts and conflicts, failure/retry, backup export/import, note-only PRs and relabeling, and mobile layout.');
+  console.log('PASS: add/edit/clear notes, cancel/Escape, safe multiline plain text, persistence, cross-tab drafts and conflicts, failure/retry, backup export/import, last-label removal with saved notes, relabeling, and mobile layout.');
 } finally {
   await context?.close();
   await rm(profile, { recursive: true, force: true });

@@ -34,7 +34,7 @@ Click **×** beside a label to remove it from a PR. To rename labels, change col
 - **Reorder labels:** drag a label's six-dot handle in a picker, or focus the handle and press **Alt + ↑ / ↓**. The order is shared across pickers.
 - **Update PR details:** click **Refresh** in My tasks. Unavailable PRs remain listed with a retry option.
 
-PRs stay tracked after they close or merge. Removing all labels and the note removes a PR from My tasks. Notes support up to 2,000 characters each.
+PRs stay tracked after they close or merge. Removing the last label removes a PR from My tasks, even if it has a note. The note is kept and reappears if you label the PR again. Notes support up to 2,000 characters each.
 
 Supported pages are repository PR lists, personal PR lists (including assigned, mentioned, and review-requested), and PR **Conversation** pages with a Labels sidebar on `github.com`. GitHub Enterprise domains and the **Files changed**, **Commits**, and **Checks** tabs do not have label controls.
 

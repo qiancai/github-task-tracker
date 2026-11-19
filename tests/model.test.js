@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { initialState, validateState, applyOperation, normalizeKey } from '../src/model.js';
+import { initialState, validateState, applyOperation, normalizeKey, trackedPRKeys } from '../src/model.js';
 
 test('PR identity includes repository and ignores GitHub name casing', () => {
   const state = applyOperation(initialState(), { type: 'setLabel', key: 'PingCAP/docs#42', labelId: 'pending-self', selected: true });
@@ -212,20 +212,32 @@ test('private notes migrate from old backups and round-trip as plain text', () =
   assert.deepEqual(after.pullRequests, before.pullRequests);
 });
 
-test('notes survive label removal and note-only PRs can be relabeled or cleared', () => {
+test('only labeled PRs are tracked while notes survive removal and relabeling', () => {
   let state = initialState();
-  state.pullRequests['a/one#1'] = ['pending-self'];
-  state = applyOperation(state, { type: 'setNote', key: 'a/one#1', text: 'Keep tracking this', expectedText: '' });
+  state.pullRequests['a/one#1'] = ['pending-self', 'wait-review'];
+  state = applyOperation(state, { type: 'setNote', key: 'a/one#1', text: 'Saved for later', expectedText: '' });
   state = applyOperation(state, { type: 'setLabel', key: 'a/one#1', labelId: 'pending-self', selected: false });
-  assert.equal(state.notes['a/one#1'], 'Keep tracking this');
-  assert.equal(state.pullRequests['a/one#1'], undefined);
-  state = applyOperation(state, { type: 'updateLabelsOnPRs', keys: ['a/one#1'], labelIds: ['wait-review'], removeLabelIds: [] });
-  assert.deepEqual(state.pullRequests['a/one#1'], ['wait-review']);
+  assert.deepEqual(trackedPRKeys(state), ['a/one#1']);
+  state = applyOperation(state, { type: 'setLabel', key: 'a/one#1', labelId: 'wait-review', selected: false });
+  assert.deepEqual(trackedPRKeys(state), []);
+  assert.equal(state.notes['a/one#1'], 'Saved for later');
+  assert.deepEqual(validateState(JSON.parse(JSON.stringify(state))), state);
+  const snapshot = structuredClone(state);
+  for (const type of ['addLabelsToPRs', 'updateLabelsOnPRs']) {
+    assert.throws(() => applyOperation(state, { type, keys: ['a/one#1'], labelIds: ['wait-review'] }), /no longer tracked/);
+  }
+  assert.throws(() => applyOperation(state, { type: 'setNote', key: 'a/one#1', text: 'Stale draft', expectedText: 'Saved for later' }), /no longer tracked/);
+  assert.deepEqual(state, snapshot);
+  state = applyOperation(state, { type: 'setLabel', key: 'a/one#1', labelId: 'wait-review', selected: true });
+  assert.deepEqual(trackedPRKeys(state), ['a/one#1']);
+  assert.equal(state.notes['a/one#1'], 'Saved for later');
+  state = applyOperation(state, { type: 'updateLabelsOnPRs', keys: ['a/one#1'], labelIds: [], removeLabelIds: ['wait-review'] });
+  assert.deepEqual(trackedPRKeys(state), []);
+  assert.equal(state.notes['a/one#1'], 'Saved for later');
+  state = applyOperation(state, { type: 'setLabel', key: 'a/one#1', labelId: 'wait-review', selected: true });
   state = applyOperation(state, { type: 'deleteLabel', labelId: 'wait-review' });
-  assert.equal(state.notes['a/one#1'], 'Keep tracking this');
-  state = applyOperation(state, { type: 'setNote', key: 'a/one#1', text: ' \n ', expectedText: 'Keep tracking this' });
-  assert.deepEqual(state.notes, {});
-  assert.deepEqual(state.pullRequests, {});
+  assert.deepEqual(trackedPRKeys(state), []);
+  assert.equal(state.notes['a/one#1'], 'Saved for later');
 });
 
 test('note conflicts and malformed notes fail atomically', () => {

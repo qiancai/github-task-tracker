@@ -30,10 +30,8 @@ export function validateLabel(label) {
 }
 
 export function trackedPRKeys(state) {
-  return [...new Set([
-    ...Object.keys(state.pullRequests).filter(key => state.pullRequests[key].length),
-    ...Object.keys(state.notes || {})
-  ])];
+  // Labels determine tracking; keep notes for reuse without keeping unlabeled PRs in My tasks.
+  return Object.keys(state.pullRequests).filter(key => state.pullRequests[key].length);
 }
 
 export function validateState(input) {
@@ -119,7 +117,7 @@ export function applyOperation(current, operation) {
     case 'updateLabelsOnPRs': {
       requireValue(Array.isArray(operation.keys) && operation.keys.length > 0 && operation.keys.length <= 1000, 'Select between 1 and 1,000 PRs.');
       const keys = [...new Set(operation.keys.map(normalizeKey))];
-      requireValue(keys.every(key => state.pullRequests[key]?.length || state.notes?.[key]), 'A selected PR is no longer tracked. Close this dialog and select your PRs again.');
+      requireValue(keys.every(key => state.pullRequests[key]?.length), 'A selected PR is no longer tracked. Close this dialog and select your PRs again.');
       requireValue(Array.isArray(operation.labelIds) && operation.labelIds.length <= 100, 'Choose valid labels to add.');
       requireValue(operation.labelIds.every(id => state.labels.some(label => label.id === id)), 'A selected label was removed. Choose the labels again.');
       const removals = operation.removeLabelIds === undefined ? [] : operation.removeLabelIds;
