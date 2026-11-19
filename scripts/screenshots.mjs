@@ -1,11 +1,14 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const { chromium } = await import(process.env.GTT_PLAYWRIGHT_MODULE || 'playwright');
 const root = fileURLToPath(new URL('../', import.meta.url));
+const store = process.argv.includes('--store');
+const screenshotDir = join(root, store ? 'dist/store/screenshots' : 'docs/screenshots');
+await mkdir(screenshotDir, { recursive: true });
 const fixture = await readFile(join(root, 'docs/fixtures/github-pulls.html'), 'utf8');
 const detailFixture = await readFile(join(root, 'docs/fixtures/github-pull.html'), 'utf8');
 const profile = await mkdtemp(join(tmpdir(), 'gtt-screenshots-'));
@@ -18,7 +21,7 @@ try {
     executablePath: process.env.GTT_CHROME_EXECUTABLE,
     headless: true,
     args: [`--disable-extensions-except=${root}`, `--load-extension=${root}`],
-    viewport: { width: 1320, height: 930 },
+    viewport: store ? { width: 1280, height: 800 } : { width: 1320, height: 930 },
     colorScheme: 'light'
   });
   // Fulfill synthetic pages/details only; block all real GitHub traffic.
@@ -64,7 +67,7 @@ try {
   assert.equal(await page.locator('[data-gtt]').count(), 6);
   assert.equal(await page.locator('img').count(), 0);
   assert.ok(!(await page.content()).match(/pingcap|ti-chi|24528|24621/i));
-  await page.screenshot({ path: join(root, 'docs/screenshots/github-list.png') });
+  await page.screenshot({ path: join(screenshotDir, 'github-list.png') });
 
   // Reuse the same synthetic page for the inline-creation screenshot.
   const cdp = await context.newCDPSession(page);
@@ -82,7 +85,7 @@ try {
     functionDeclaration: `function() { this.querySelector('.label-name').click(); }`
   });
   await page.waitForSelector('[data-gtt-filter]');
-  await page.screenshot({ path: join(root, 'docs/screenshots/label-prs.png') });
+  await page.screenshot({ path: join(screenshotDir, 'label-prs.png') });
   object = await shadowObject(true);
   await cdp.send('Runtime.callFunctionOn', { objectId: object.objectId, functionDeclaration: `function() { this.querySelector('.clear').click(); }` });
   await page.waitForSelector('[data-gtt="example-org/sample-project#106"]');
@@ -96,19 +99,19 @@ try {
       this.querySelector('.create-fields input[type=color]').value = '#facc15';
     }`
   });
-  await page.screenshot({ path: join(root, 'docs/screenshots/inline-create.png') });
+  await page.screenshot({ path: join(screenshotDir, 'inline-create.png') });
 
   // The settings preview is also fictional, including the repository and PR number.
   await settings.reload();
   await settings.waitForSelector('.label-row');
   await settings.locator('.mock-row strong').evaluate(node => { node.textContent = 'docs: add a quickstart guide'; });
   await settings.locator('.mock-row small').evaluate(node => { node.textContent = '#106 opened in example-org/sample-project'; });
-  await settings.screenshot({ path: join(root, 'docs/screenshots/settings.png'), fullPage: true });
+  await settings.screenshot({ path: join(screenshotDir, 'settings.png'), fullPage: !store });
   await page.goto('https://github.com/example-org/sample-project/pull/106');
   await page.waitForSelector('[data-gtt][data-placement=sidebar]');
   assert.equal(await page.locator('[data-gtt]').count(), 1);
   assert.equal(await page.locator('img').count(), 0);
-  await page.screenshot({ path: join(root, 'docs/screenshots/github-pr.png'), fullPage: true });
+  await page.screenshot({ path: join(screenshotDir, 'github-pr.png'), fullPage: !store });
   const tasks = await context.newPage();
   await tasks.goto(worker.url().replace('/src/background.js', '/tasks.html#label=follow-today'));
   await tasks.waitForSelector('#task-results[aria-busy="false"]');
@@ -116,24 +119,24 @@ try {
   const headerBounds = page => page.locator('header').evaluate(header => { const rect = header.getBoundingClientRect(); return { left: rect.left, width: rect.width }; });
   assert.deepEqual(await headerBounds(tasks), await headerBounds(settings), 'Both tabs must keep the same header alignment and width');
   assert.equal(await tasks.locator('#task-rows img').count(), 0);
-  await tasks.screenshot({ path: join(root, 'docs/screenshots/my-tasks.png'), fullPage: true });
+  await tasks.screenshot({ path: join(screenshotDir, 'my-tasks.png'), fullPage: !store });
   holdRefresh = new Promise(resolve => { releaseRefresh = resolve; });
   await tasks.locator('#refresh-details').click();
-  await tasks.screenshot({ path: join(root, 'docs/screenshots/my-tasks-refresh.png'), fullPage: true });
+  await tasks.screenshot({ path: join(screenshotDir, 'my-tasks-refresh.png'), fullPage: !store });
   holdRefresh = undefined; releaseRefresh();
   await tasks.waitForSelector('#task-results[aria-busy="false"]');
   await tasks.locator('[data-key="example-org/sample-project#106"] .task-note').click();
-  await tasks.screenshot({ path: join(root, 'docs/screenshots/my-tasks-note.png'), fullPage: true });
+  await tasks.screenshot({ path: join(screenshotDir, 'my-tasks-note.png'), fullPage: !store });
   await tasks.locator('#cancel-note').click();
   await tasks.locator('[data-key="example-org/sample-project#106"] .task-add-label').click();
-  await tasks.screenshot({ path: join(root, 'docs/screenshots/my-tasks-label-picker.png'), fullPage: true });
+  await tasks.screenshot({ path: join(screenshotDir, 'my-tasks-label-picker.png'), fullPage: !store });
   await tasks.locator('#cancel-add-labels').click();
   await tasks.locator('.task-checkbox').nth(0).check();
   await tasks.locator('.task-checkbox').nth(1).check();
   await tasks.locator('#bulk-add-labels').click();
   await tasks.locator('#add-label-choices input[value="pending-self"]').check();
-  await tasks.screenshot({ path: join(root, 'docs/screenshots/my-tasks-bulk.png'), fullPage: true });
-  console.log('Generated all documentation screenshots from fictional data; no live GitHub requests or real avatars used.');
+  await tasks.screenshot({ path: join(screenshotDir, 'my-tasks-bulk.png'), fullPage: !store });
+  console.log(`Generated fictional screenshots in ${screenshotDir}; no live GitHub requests or real avatars used.`);
 } finally {
   releaseRefresh?.();
   await context?.close();
